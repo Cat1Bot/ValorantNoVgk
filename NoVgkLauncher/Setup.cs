@@ -151,7 +151,7 @@ internal class Setup
                     if (!File.Exists(vgkpath))
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine(" [SUCCESS] Vanguard uninstallation completed, starting League now...");
+                        Console.WriteLine(" [SUCCESS] Vanguard uninstallation completed, starting now...");
                         Console.ResetColor();
                         return true;
                     }
