@@ -369,6 +369,8 @@ public partial class ConfigProxy
             SetKey(configObject, "keystone.client.feature_flags.restart_required.disabled", true);
             SetKey(configObject, "keystone.client.feature_flags.vanguardLaunch.disabled", true);
             SetKey(configObject, "keystone.client.feature_flags.vanguard_attestation.enabled", false);
+            SetKey(configObject, "lion.vanguard.required", false);
+            SetKey(configObject, "lion.vanguard.netrequired", false);
             SetKey(configObject, "lol.client_settings.vanguard.enabled", false);
             SetKey(configObject, "lol.client_settings.vanguard.enabled_embedded", false);
             SetKey(configObject, "lol.client_settings.vanguard.url", "");
