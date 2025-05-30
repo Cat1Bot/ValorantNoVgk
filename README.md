@@ -1,4 +1,4 @@
->  [!DANGER]  
+>  [!CAUTION]  
 > THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking with this you will get kicked and punished, in some cases like Valorant your account will get banned.
 
 # Vanguardless-Mode
