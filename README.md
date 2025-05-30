@@ -12,4 +12,5 @@ A lightweight tool that lets you run Valorant, 2XKO, and League of Legends witho
 
 ### How it works
 League of Legends / 2XKO: Uses a config hook to prevent Vanguard enforcement at launch.
+
 Valorant: Spawns a minimal fake vgc Windows service to satisfy the client's Vanguard presence check.
