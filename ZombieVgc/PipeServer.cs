@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text;
@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Security.AccessControl;
 using System.Security.Principal;
-
 
 namespace vgc
 {
@@ -69,10 +68,9 @@ namespace vgc
                     NamedPipeServerStream.MaxAllowedServerInstances,
                     PipeTransmissionMode.Message,
                     PipeOptions.Asynchronous,
-                    0, // default input buffer
-                    0, // default output buffer
-                    ps); // custom PipeSecurity
-
+                    0,
+                    0,
+                    ps);
 
                 try
                 {
@@ -80,17 +78,16 @@ namespace vgc
                     await server.WaitForConnectionAsync(token);
                     Trace.WriteLine("[INFO] Client connected.");
 
-                    _ = Task.Run(() => HandleClient(server, token), token);
+                    await HandleClient(server, token); // <-- Wait for handler to complete before looping
                 }
                 catch (OperationCanceledException)
                 {
-                    server.Dispose();
+                    // Do nothing, just exit
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine("[ERROR] Exception while accepting client: " + ex.Message);
-                    server.Dispose();
+                    Trace.WriteLine("[ERROR] Exception while handling pipe client: " + ex.Message);
                 }
             }
 
