@@ -2,7 +2,7 @@
 > THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking with this you will get kicked and punished, in some cases like Valorant your account will get banned.
 
 # Vanguardless-Mode
-A lightweight tool that lets you run Valorant, 2XKO, and League of Legends without Vanguard. Useful for offline mode (2XKO) or debugging the client safely (ex. sniffing with Fiddler/Charles Proxy).
+A lightweight tool that lets you run Valorant, 2XKO, and League of Legends without Vanguard. Useful for offline mode (2XKO) or debugging the client safely (eg. sniffing with Fiddler/Charles Proxy).
 
 ### Usage
 1. Place vgc.exe (a dummy/fake Vanguard executable) in the same directory as NoVgkLauncher.exe.
