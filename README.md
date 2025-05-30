@@ -1,5 +1,5 @@
 >  [!CAUTION]  
-> THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking with this you will get kicked and punished, in some cases like Valorant your account will get banned.
+> THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking (includes practice mode) with this, you will VAL 5 or kicked and penalized (dodge timer or temp ban).
 
 # Vanguardless-Mode
 A lightweight tool that lets you run Valorant, 2XKO, and League of Legends without Vanguard. Useful for offline mode (2XKO) or debugging the client safely (eg. sniffing with Fiddler/Charles Proxy).
