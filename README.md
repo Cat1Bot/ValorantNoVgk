@@ -4,7 +4,7 @@
 # Vanguardless-Mode
 A lightweight tool that lets you run Valorant, 2XKO, and League of Legends without Vanguard. Useful for offline mode (2XKO) or debugging the client safely (eg. sniffing with Fiddler/Charles Proxy).
 
-### Usage
+## Usage
 1. Place vgc.exe (a dummy/fake Vanguard executable) in the same directory as NoVgkLauncher.exe.
 2. Run NoVgkLauncher.exe and select a game.
 3. The launcher will automatically uninstall Vanguard (or you can uninstall manually using Revo Uninstaller).
