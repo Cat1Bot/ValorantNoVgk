@@ -13,7 +13,7 @@ internal sealed class RiotClient
         if (path is null)
             return null;
 
-        IEnumerable<string> allArgs = [$"--client-config-url=http://127.0.0.1:{LeagueProxy.ConfigPort}", .. args ?? []];
+        IEnumerable<string> allArgs = [$"--client-config-url=http://127.0.0.1:{LeagueProxy.ConfigPort}", "--launch-product=valorant", "--launch-patchline=live", .. args ?? []];
 
         return Process.Start(path, allArgs);
     }
