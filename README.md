@@ -1,7 +1,7 @@
 >  [!CAUTION]  
 > THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking (includes practice mode) with this, you will VAL 5 and in some cases penalized (temp ban).
 
-# Vanguardless-Mode
+# ValorantNoVgk
 A lightweight tool that lets you run Valorant without Vanguard. Meant for debugging safely (eg. sniffing with Fiddler/Charles Proxy, or dumping game binary). For League of Legends and 2XKO use [League Patch Collection](https://github.com/Cat1Bot/league-patch-collection) instead.
 
 ## Usage
