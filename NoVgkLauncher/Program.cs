@@ -98,7 +98,7 @@ class Program
             leagueProxy.Stop();
             return;
         }
-
+        Console.WriteLine(" [INFO] Starting Valorant now...");
         await process.WaitForExitAsync();
         leagueProxy.Stop();
     }
