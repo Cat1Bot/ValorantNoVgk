@@ -1,5 +1,5 @@
->  [!CAUTION]  
-> THIS IS NOT A VANGUARD BYPASS, if you try to start online matchmaking (includes practice mode) with this, you may get VAL 5 and in some cases penalized (temp ban).
+>  [!NOTE]  
+> For League you should use [this](https://github.com/Cat1Bot/league-patch-collection) instead. This utility is mainly meant for Valorant.
 
 # Universal Vanguard Disabler
 A lightweight tool that lets you run Valorant, League, and 2XKO (both offline and online) without Vanguard. Useful for debugging or offline modes where server doenst enforce Vanguard session.
