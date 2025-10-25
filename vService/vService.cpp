@@ -16,35 +16,7 @@ SERVICE_STATUS_HANDLE g_StatusHandle = NULL;
 HANDLE                g_ServiceStopEvent = INVALID_HANDLE_VALUE;
 
 std::atomic_bool shutdown_event(false);
-std::mutex log_mutex;
-std::wofstream log_file;
-
 std::atomic_bool client_disconnected(false);
-
-static void Log(const std::wstring& msg) {
-    std::lock_guard<std::mutex> lock(log_mutex);
-
-    if (!log_file.is_open()) {
-        wchar_t exePath[MAX_PATH];
-        if (GetModuleFileNameW(NULL, exePath, MAX_PATH)) {
-            std::wstring path(exePath);
-            size_t lastSlash = path.find_last_of(L"\\/");
-            if (lastSlash != std::wstring::npos) {
-                path = path.substr(0, lastSlash + 1) + L"vService.log";
-
-                DeleteFileW(path.c_str());
-
-                log_file.open(path, std::ios::out | std::ios::app);
-            }
-        }
-    }
-
-    if (log_file.is_open()) {
-        log_file << msg << std::endl;
-        log_file.flush();
-    }
-}
-
 
 void ServiceMain(DWORD argc, LPWSTR* argv);
 void WINAPI ServiceCtrlHandler(DWORD);
@@ -57,7 +29,6 @@ static int WINAPI wmain(int argc, wchar_t* argv[]) {
     };
 
     if (!StartServiceCtrlDispatcher(ServiceTable)) {
-        Log(L"StartServiceCtrlDispatcher failed");
         return 1;
     }
 
@@ -67,7 +38,6 @@ static int WINAPI wmain(int argc, wchar_t* argv[]) {
 void ServiceMain(DWORD argc, LPWSTR* argv) {
     g_StatusHandle = RegisterServiceCtrlHandler(SERVICE_NAME, ServiceCtrlHandler);
     if (!g_StatusHandle) {
-        Log(L"RegisterServiceCtrlHandler failed");
         return;
     }
 
@@ -82,7 +52,6 @@ void ServiceMain(DWORD argc, LPWSTR* argv) {
 
     g_ServiceStopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
     if (g_ServiceStopEvent == NULL) {
-        Log(L"CreateEvent failed");
         g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
         SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
         return;
@@ -100,12 +69,10 @@ void ServiceMain(DWORD argc, LPWSTR* argv) {
     while (true) {
         DWORD waitResult = WaitForSingleObject(g_ServiceStopEvent, 100);
         if (waitResult == WAIT_OBJECT_0) {
-            Log(L"Service stop event signaled.");
             shutdown_event = true;
             break;
         }
         if (client_disconnected.load()) {
-            Log(L"Client disconnected, stopping service.");
             shutdown_event = true;
             break;
         }
@@ -118,10 +85,6 @@ void ServiceMain(DWORD argc, LPWSTR* argv) {
     CloseHandle(g_ServiceStopEvent);
     g_ServiceStopEvent = NULL;
 
-    if (log_file.is_open()) {
-        log_file.close();
-    }
-
     g_ServiceStatus.dwCurrentState = SERVICE_STOPPED;
     g_ServiceStatus.dwServiceSpecificExitCode = 0;
     SetServiceStatus(g_StatusHandle, &g_ServiceStatus);
@@ -132,8 +95,6 @@ void WINAPI ServiceCtrlHandler(DWORD CtrlCode) {
     case SERVICE_CONTROL_STOP:
         if (g_ServiceStatus.dwCurrentState != SERVICE_RUNNING)
             break;
-
-        Log(L"Service stop requested.");
 
         g_ServiceStatus.dwControlsAccepted = 0;
         g_ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING;
@@ -160,7 +121,6 @@ void PipeServerThread() {
         if (!ConvertStringSecurityDescriptorToSecurityDescriptorW(
             L"D:(A;OICI;GRGW;;;WD)", SDDL_REVISION_1, &pSD, nullptr))
         {
-            Log(L"Failed to create security descriptor for pipe.");
             Sleep(1000);
             continue;
         }
@@ -179,17 +139,13 @@ void PipeServerThread() {
         LocalFree(pSD);
 
         if (pipe == INVALID_HANDLE_VALUE) {
-            Log(L"CreateNamedPipeW failed.");
             Sleep(1000);
             continue;
         }
 
-        Log(L"Waiting for client connection...");
-
         OVERLAPPED ov{};
         ov.hEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
         if (!ov.hEvent) {
-            Log(L"CreateEvent for overlapped failed.");
             CloseHandle(pipe);
             Sleep(1000);
             continue;
@@ -207,7 +163,6 @@ void PipeServerThread() {
                     connected = TRUE;
                 }
                 else {
-                    Log(L"Service stop requested before client connection.");
                     CancelIo(pipe);
                     CloseHandle(ov.hEvent);
                     CloseHandle(pipe);
@@ -218,21 +173,15 @@ void PipeServerThread() {
                 connected = TRUE;
             }
             else {
-                std::wstringstream ss;
-                ss << L"ConnectNamedPipe failed, error " << err;
-                Log(ss.str());
             }
         }
 
         CloseHandle(ov.hEvent);
 
         if (!connected) {
-            Log(L"No client connected. Recreating pipe...");
             CloseHandle(pipe);
             continue;
         }
-
-        Log(L"Client connected.");
 
         char buffer[4096]{};
         DWORD bytesRead = 0;
@@ -242,32 +191,15 @@ void PipeServerThread() {
             BOOL success = ReadFile(pipe, buffer, sizeof(buffer), &bytesRead, nullptr);
 
             if (!success || bytesRead == 0) {
-                DWORD err = GetLastError();
-                if (err == ERROR_BROKEN_PIPE || err == ERROR_NO_DATA) {
-                    Log(L"Client disconnected normally.");
-                }
-                else {
-                    std::wstringstream ss;
-                    ss << L"ReadFile failed, error " << err;
-                    Log(ss.str());
-                }
                 client_disconnected = true;
                 break;
             }
 
             messageCount++;
 
-            std::wstringstream hexStream;
-            hexStream << L"Received message #" << messageCount << L": ";
-            for (DWORD i = 0; i < bytesRead; ++i)
-                hexStream << std::hex << std::setw(2) << std::setfill(L'0')
-                << static_cast<int>(static_cast<unsigned char>(buffer[i])) << L' ';
-            Log(hexStream.str());
-
-            // Send one-time message after second message received
             if (messageCount == 2)
             {
-                unsigned char oneTimeMsg[36] = {
+                unsigned char connectMsg[36] = {
                     0xE9,0x03,0x00,0x00,0x24,0x00,0x00,0x00,
                     0x01,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
                     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -276,27 +208,14 @@ void PipeServerThread() {
                 };
 
                 DWORD bytesWritten = 0;
-                BOOL success = WriteFile(pipe, oneTimeMsg, sizeof(oneTimeMsg), &bytesWritten, nullptr);
+                WriteFile(pipe, connectMsg, sizeof(connectMsg), &bytesWritten, nullptr);
                 FlushFileBuffers(pipe);
-
-                if (success)
-                    Log(L"Sent one-time message after second message received.");
-                else {
-                    DWORD err = GetLastError();
-                    std::wstringstream ss;
-                    ss << L"Failed to send one-time message, error " << err;
-                    Log(ss.str());
-                }
             }
 
-
-            // Handles HeartbeatSync -> HeartbeatAck
             if (bytesRead == 40 && buffer[0] == 0x03) {
                 char response[40];
                 memcpy(response, buffer, 40);
                 response[0] = 0x04;
-
-                Log(L"Responding with HeartbeatAck.");
 
                 DWORD bytesWritten;
                 WriteFile(pipe, response, 40, &bytesWritten, nullptr);
@@ -305,7 +224,6 @@ void PipeServerThread() {
         }
 
         if (shutdown_event.load()) {
-            Log(L"Sending disconnect message to client...");
 
             unsigned char disconnectMessage[36] = {
                 0x02,0x00,0x00,0x00,0x24,0x00,0x00,0x00,
@@ -319,13 +237,8 @@ void PipeServerThread() {
             BOOL success = WriteFile(pipe, disconnectMessage, sizeof(disconnectMessage), &bytesWritten, nullptr);
             FlushFileBuffers(pipe);
 
-            if (success)
-                Log(L"Sent disconnect message to client successfully.");
-            else {
-                DWORD err = GetLastError();
-                std::wstringstream ss;
-                ss << L"Failed to send disconnect message, error " << err << L". Assuming no client connected.";
-                Log(ss.str());
+            if (!success)
+            {
                 client_disconnected = true;
             }
             break;
